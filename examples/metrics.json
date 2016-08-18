@@ -1,0 +1,69 @@
+{
+  "@timestamp": "2016-08-18T04:34:45.249Z",
+  "beat": {
+    "hostname": "iMac.local",
+    "name": "iMac.local"
+  },
+  "counter": 5,
+  "metrics": {
+    "classes": {
+      "loaded": 7491,
+      "total": 7491,
+      "unloaded": 0
+    },
+    "data_source": {
+      "primary_active": 0,
+      "primary_usage": 0
+    },
+    "gauge_response": {
+      "actuator": 5,
+      "autoconfig": 25,
+      "configprops": 722,
+      "env": 26,
+      "info": 444,
+      "trace": 11,
+      "unmapped": 147
+    },
+    "gc": {
+      "marksweep": {
+        "count": 2,
+        "time": 129
+      },
+      "scavenge": {
+        "count": 9,
+        "time": 94
+      }
+    },
+    "heap": {
+      "committed": 588288,
+      "init": 262144,
+      "total": 3728384,
+      "used": 211220
+    },
+    "http": {
+      "active_sessions": 0,
+      "max_sessions": -1
+    },
+    "load_average": 2.30517578125,
+    "mem": {
+      "free": 377067,
+      "total": 650563
+    },
+    "processors": 4,
+    "status": {
+      "200": {
+        "actuator": 48,
+        "autoconfig": 1,
+        "configprops": 1,
+        "env": 1,
+        "info": 1,
+        "trace": 1
+      }
+    },
+    "uptime": {
+      "instance": 966561,
+      "total": 972644
+    }
+  },
+  "type": "metrics"
+}

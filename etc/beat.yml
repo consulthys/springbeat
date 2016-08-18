@@ -1,0 +1,19 @@
+################### Springbeat Configuration Example #########################
+
+############################# Springbeat ######################################
+
+springbeat:
+  # Defines how often an event is sent to the output
+  period: 10s
+
+  # List of URLs to the Spring Boot app.
+  # Defaults to ["http://127.0.0.1"].
+  # Note: Do not use trailing slash
+  urls:
+    #- http://user:password@127.0.0.1:8080
+    - http://127.0.0.1:8080
+
+  # Statistics to collect
+  stats:
+    metrics: true
+    health: true

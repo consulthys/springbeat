@@ -1,0 +1,23 @@
+{
+  "@timestamp": "2016-08-18T04:46:31.565Z",
+  "beat": {
+    "hostname": "iMac.local",
+    "name": "iMac.local"
+  },
+  "counter": 2,
+  "health": {
+    "db": {
+      "database": "H2",
+      "hello": 1,
+      "status": "UP"
+    },
+    "diskSpace": {
+      "free": 528694333440,
+      "status": "UP",
+      "threshold": 10485760,
+      "total": 999345127424
+    },
+    "status": "UP"
+  },
+  "type": "health"
+}

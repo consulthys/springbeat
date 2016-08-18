@@ -1,0 +1,5 @@
+= Springbeat Docs
+
+Welcome to the Springbeat documentation.
+
+
