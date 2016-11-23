@@ -19,7 +19,6 @@ type Springbeat struct {
     config config.Config
     client publisher.Client
 
-    period          time.Duration
     urls            []*url.URL
 
     metricsStats    bool
@@ -73,7 +72,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
     }
 
     logp.Debug("springbeat", "Init springbeat")
-    logp.Debug("springbeat", "Period %v\n", bt.period)
+    logp.Debug("springbeat", "Period %v\n", bt.config.Period)
     logp.Debug("springbeat", "Watch %v", bt.urls)
     logp.Debug("springbeat", "Metrics statistics %t\n", bt.metricsStats)
     logp.Debug("springbeat", "Health statistics %t\n", bt.healthStats)
