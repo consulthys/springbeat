@@ -143,7 +143,7 @@ func (bt *Springbeat) Run(b *beat.Beat) error {
 
                 timerEnd := time.Now()
                 duration := timerEnd.Sub(timerStart)
-                if duration.Nanoseconds() > bt.period.Nanoseconds() {
+                if duration.Nanoseconds() > bt.config.Period.Nanoseconds() {
                     logp.Warn("Ignoring tick(s) due to processing taking longer than one period")
                 }
             }
