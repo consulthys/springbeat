@@ -3,17 +3,18 @@
 
 package config
 
+import "time"
+
 type Config struct {
-	Springbeat SpringbeatConfig
-}
-
-type SpringbeatConfig struct {
-	Period string `config:"period"`
-
+	Period time.Duration `config:"period"`
 	URLs []string
 
 	Stats struct {
-		Metrics  *bool
-		Health	 *bool
+	     Metrics  	*bool
+	     Health	*bool
 	}
+}
+
+var DefaultConfig = Config{
+	Period: 1 * time.Second,
 }

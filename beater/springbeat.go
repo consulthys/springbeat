@@ -14,42 +14,34 @@ import (
     "github.com/consulthys/springbeat/config"
 )
 
-const selector = "springbeat"
-
 type Springbeat struct {
+    done   chan struct{}
+    config config.Config
+    client publisher.Client
+
     period          time.Duration
     urls            []*url.URL
-
-    beatConfig      *config.Config
-
-    done            chan struct{}
-    client          publisher.Client
 
     metricsStats    bool
     healthStats     bool
 }
 
 // Creates beater
-func New() *Springbeat {
-    return &Springbeat{
-        done: make(chan struct{}),
+func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
+    config := config.DefaultConfig
+    if err := cfg.Unpack(&config); err != nil {
+        return nil, fmt.Errorf("Error reading config file: %v", err)
     }
-}
 
-/// *** Beater interface methods ***///
-
-func (bt *Springbeat) Config(b *beat.Beat) error {
-
-    // Load beater beatConfig
-    err := b.RawConfig.Unpack(&bt.beatConfig)
-    if err != nil {
-        return fmt.Errorf("Error reading config file: %v", err)
+    bt := &Springbeat{
+        done: make(chan struct{}),
+        config: config,
     }
 
     //define default URL if none provided
     var urlConfig []string
-    if bt.beatConfig.Springbeat.URLs != nil {
-        urlConfig = bt.beatConfig.Springbeat.URLs
+    if config.URLs != nil {
+        urlConfig = config.URLs
     } else {
         urlConfig = []string{"http://127.0.0.1"}
     }
@@ -59,52 +51,34 @@ func (bt *Springbeat) Config(b *beat.Beat) error {
         u, err := url.Parse(urlConfig[i])
         if err != nil {
             logp.Err("Invalid Spring Boot URL: %v", err)
-            return err
+            return nil, err
         }
         bt.urls[i] = u
     }
 
-    if bt.beatConfig.Springbeat.Stats.Metrics != nil {
-        bt.metricsStats = *bt.beatConfig.Springbeat.Stats.Metrics
+    if config.Stats.Metrics != nil {
+        bt.metricsStats = *config.Stats.Metrics
     } else {
         bt.metricsStats = true
     }
 
-    if bt.beatConfig.Springbeat.Stats.Health != nil {
-        bt.healthStats = *bt.beatConfig.Springbeat.Stats.Health
+    if config.Stats.Health != nil {
+        bt.healthStats = *config.Stats.Health
     } else {
         bt.healthStats = true
     }
 
     if !bt.metricsStats && !bt.metricsStats {
-        return errors.New("Invalid statistics configuration")
+        return nil, errors.New("Invalid statistics configuration")
     }
 
-    return nil
-}
+    logp.Debug("springbeat", "Init springbeat")
+    logp.Debug("springbeat", "Period %v\n", bt.period)
+    logp.Debug("springbeat", "Watch %v", bt.urls)
+    logp.Debug("springbeat", "Metrics statistics %t\n", bt.metricsStats)
+    logp.Debug("springbeat", "Health statistics %t\n", bt.healthStats)
 
-func (bt *Springbeat) Setup(b *beat.Beat) error {
-
-    // Setting default period if not set
-    if bt.beatConfig.Springbeat.Period == "" {
-        bt.beatConfig.Springbeat.Period = "10s"
-    }
-
-    bt.client = b.Publisher.Connect()
-
-    var err error
-    bt.period, err = time.ParseDuration(bt.beatConfig.Springbeat.Period)
-    if err != nil {
-        return err
-    }
-
-    logp.Debug(selector, "Init springbeat")
-    logp.Debug(selector, "Period %v\n", bt.period)
-    logp.Debug(selector, "Watch %v", bt.urls)
-    logp.Debug(selector, "Metrics statistics %t\n", bt.metricsStats)
-    logp.Debug(selector, "Health statistics %t\n", bt.healthStats)
-
-    return nil
+    return bt, nil
 }
 
 func (bt *Springbeat) Run(b *beat.Beat) error {
@@ -113,7 +87,7 @@ func (bt *Springbeat) Run(b *beat.Beat) error {
     for _, u := range bt.urls {
         go func(u *url.URL) {
 
-            ticker := time.NewTicker(bt.period)
+            ticker := time.NewTicker(bt.config.Period)
             counter := 1
             for {
                 select {
@@ -125,13 +99,13 @@ func (bt *Springbeat) Run(b *beat.Beat) error {
                 timerStart := time.Now()
 
                 if bt.metricsStats {
-                    logp.Debug(selector, "Metrics stats for url: %v", u)
+                    logp.Debug("springbeat", "Metrics stats for url: %v", u)
                     metrics_stats, err := bt.GetMetricsStats(*u)
 
                     if err != nil {
                         logp.Err("Error reading Metrics stats: %v", err)
                     } else {
-                        logp.Debug(selector, "Metrics stats detail: %+v", metrics_stats)
+                        logp.Debug("springbeat", "Metrics stats detail: %+v", metrics_stats)
 
                         event := common.MapStr{
                             "@timestamp":   common.Time(time.Now()),
@@ -147,13 +121,13 @@ func (bt *Springbeat) Run(b *beat.Beat) error {
                 }
 
                 if bt.healthStats {
-                    logp.Debug(selector, "Health stats for url: %v", u)
+                    logp.Debug("springbeat", "Health stats for url: %v", u)
                     health_stats, err := bt.GetHealthStats(*u)
 
                     if err != nil {
                         logp.Err("Error reading Health stats: %v", err)
                     } else {
-                        logp.Debug(selector, "Health stats detail: %+v", health_stats)
+                        logp.Debug("springbeat", "Health stats detail: %+v", health_stats)
 
                         event := common.MapStr{
                             "@timestamp":   common.Time(time.Now()),
@@ -183,11 +157,8 @@ func (bt *Springbeat) Run(b *beat.Beat) error {
     return nil
 }
 
-func (bt *Springbeat) Cleanup(b *beat.Beat) error {
-    return nil
-}
-
 func (bt *Springbeat) Stop() {
-    logp.Debug(selector, "Stop springbeat")
+    logp.Debug("springbeat", "Stop springbeat")
+    bt.client.Close()
     close(bt.done)
 }
