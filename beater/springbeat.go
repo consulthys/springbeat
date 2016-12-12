@@ -83,6 +83,8 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 func (bt *Springbeat) Run(b *beat.Beat) error {
     logp.Info("springbeat is running! Hit CTRL-C to stop it.")
 
+    bt.client = b.Publisher.Connect()
+    
     for _, u := range bt.urls {
         go func(u *url.URL) {
 
